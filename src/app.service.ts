@@ -7,12 +7,19 @@ import * as cheerio from 'cheerio';
 export class AppService {
   constructor(private httpService: HttpService) {}
 
-  async getListings(url: string){
-    const response$ = this.httpService.get(url);
+  async getListings(location: string){
+    const baseUrl = 'https://www.hemnet.se/bostader?';
+    const itemTypes = 'bostadsratt';
+
+    const params = new URLSearchParams();
+    params.append("location_ids[]", location);
+    params.append("item_types[]", itemTypes);
+
+    const response$ = this.httpService.get(baseUrl, { params: params });
     const response = await firstValueFrom(response$);
     const $ = cheerio.load(response.data);
     const listings = [];
-    
+
     $('li.normal-results__hit').each((_i, element) => {
       const listing = {};
 

@@ -6,7 +6,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('scrape')
-  async getListings(@Query('url') url: string) {
-    return this.appService.getListings(url);
+  async getListings(@Query('location_ids') location: string) {
+    return this.appService.getListings(location);
   }
 }
