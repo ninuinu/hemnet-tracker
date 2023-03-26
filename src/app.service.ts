@@ -28,6 +28,13 @@ export class AppService {
         listing['title'] = title.text().trim();
       }
 
+      const attributesRow = $(element).find('div.listing-card__attribute--primary');
+      if(attributesRow) {
+        const infoString = attributesRow.text().trim().split("\n");
+        const info = infoString.filter(function(entry) { return entry.trim() != ''; });
+        listing['info'] = info.map(infoItem=>infoItem.trim());
+      }
+
       const price = $(element).find('div.listing-card__attribute--square-meter-price');
       if (price) {
         listing['squareMeterPrice'] = price.text().trim();
