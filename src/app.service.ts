@@ -22,8 +22,12 @@ export class AppService {
     const listings = [];
 
     $('li.normal-results__hit').each((_i, element) => {
-      console.log("HEJ");
       const listing = {};
+
+      const image = $(element).find('div.listing-card__images-container > div > img');
+      if(image){
+        listing['image'] = image.attr('data-src');
+      }
 
       const title = $(element).find('h2.listing-card__street-address');
       if (title) {
