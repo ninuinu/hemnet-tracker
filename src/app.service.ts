@@ -29,9 +29,9 @@ export class AppService {
         listing['image'] = image.attr('data-src');
       }
 
-      const title = $(element).find('h2.listing-card__street-address');
-      if (title) {
-        listing['title'] = title.text().trim();
+      const address = $(element).find('h2.listing-card__street-address');
+      if (address) {
+        listing['address'] = address.text().trim();
       }
 
       const attributesRow = $(element).find('div.listing-card__attribute--primary');
