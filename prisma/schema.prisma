@@ -10,11 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model FileEntity {
+model Image {
   id Int @default(autoincrement()) @id
-  fileName String
-  fileUrl  String 
+  imageName String
+  imageURL  String 
   key      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Listing {
+  id        Int      @id @default(autoincrement())
+  address   String
+  url       String   @unique
+  price     Float
+  sqmPrice  Float
+  sqmSize   Float
+  roomCount Int
+  imageUrl  String
+  createdAt DateTime @default(now())
 }
