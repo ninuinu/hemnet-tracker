@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 
 @Injectable()
-export class S3Provider {
+export class S3Service {
   private readonly s3: S3;
 
   constructor() {
