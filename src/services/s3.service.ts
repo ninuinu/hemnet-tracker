@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3 } from 'aws-sdk';
 import { ClientConfiguration } from 'aws-sdk/clients/acm';
+import { PutObjectRequest } from 'aws-sdk/clients/s3';
 
 @Injectable()
 export class S3Service {
@@ -17,7 +18,7 @@ export class S3Service {
     this.region = configService.get<string>('AWS_REGION');
     this.secretAccessKey = configService.get<string>('AWS_SECRET_ACCESS_KEY');
 
-    const awsConfig: ClientConfiguration = {
+    const s3Config: ClientConfiguration = {
       params: {
         region: this.region,
         bucketName: this.bucketName,
@@ -25,23 +26,24 @@ export class S3Service {
         secretAccessKey: this.secretAccessKey,
       }
     }
-    this.s3 = new S3(awsConfig);
+    this.s3 = new S3(s3Config);
   }
 
-  async uploadImage(key: string, data: Buffer): Promise<void> {
-  
-    const params: S3.PutObjectRequest = {
-      Bucket: this.bucketName,
-      Key: key,
-      Body: data,
-    };
+  async uploadImage(url: string): Promise<void> {
+    fetch(url)
+      .then(res => {
+        const params: PutObjectRequest = {
+            Bucket: this.bucketName,
+            Key: this.accessKey,
+            Body: res.body
+        }
+        return this.s3.putObject(params).promise();
+      }).then(res => {
+        return("Successfully uploaded image to bucket");
+      }).catch(err => {
+        return("There was an error");
+      });
 
-    try {
-      await this.s3.putObject(params).promise();
-      console.log(`Successfully uploaded ${key} to ${this.bucketName}`);
-    } catch (error) {
-      console.error('Failed to upload file to S3:', error.message);
-    }
   }
 }
 
