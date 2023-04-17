@@ -13,8 +13,8 @@ export class AppController {
   }
 
   @Post('uploadImage')
-  async uploadImage(@Query('url') url: string){
-    return this.s3Service.uploadImage(url);
+  async uploadImage(@Query('url') url: string, @Query('key') key: string){
+    return this.s3Service.uploadImage(url, key);
   }
 
   @Post('upload')

@@ -29,12 +29,12 @@ export class S3Service {
     this.s3 = new S3(s3Config);
   }
 
-  async uploadImage(url: string): Promise<void> {
+  async uploadImage(url: string, key: string): Promise<void> {
     fetch(url)
       .then(res => {
         const params: PutObjectRequest = {
             Bucket: this.bucketName,
-            Key: this.accessKey,
+            Key: key,
             Body: res.body
         }
         return this.s3.putObject(params).promise();
