@@ -30,7 +30,11 @@ export class S3Service {
     this.s3 = new S3(s3Config);
   }
 
-  async uploadImage(url: string, key: string) {
+  async uploadImage(url: string) {
+    // TODO: refactor key to hash(url + timestamp)
+
+    const key = url.split('/').pop();
+
     try {
         const res = await axios.get(url, { responseType: 'arraybuffer' });
 
@@ -43,7 +47,7 @@ export class S3Service {
         };
 
         await this.s3.putObject(params).promise();
-        
+
     } catch (error) {
         console.log('Error! ', error);
     }
