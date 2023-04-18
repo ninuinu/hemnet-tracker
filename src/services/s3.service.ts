@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { S3 } from 'aws-sdk';
 import { ClientConfiguration } from 'aws-sdk/clients/acm';
 import { PutObjectRequest } from 'aws-sdk/clients/s3';
+import axios from 'axios';
 
 @Injectable()
 export class S3Service {
@@ -24,27 +25,27 @@ export class S3Service {
         bucketName: this.bucketName,
         accessKey: this.accessKey,
         secretAccessKey: this.secretAccessKey,
-      }
-    }
+      },
+    };
     this.s3 = new S3(s3Config);
   }
 
-  async uploadImage(url: string, key: string): Promise<void> {
-    fetch(url)
-      .then(res => {
-        const params: PutObjectRequest = {
-            Bucket: this.bucketName,
-            Key: key,
-            Body: res.body
-        }
-        return this.s3.putObject(params).promise();
-      }).then(res => {
-        return("Successfully uploaded image to bucket");
-      }).catch(err => {
-        return("There was an error");
-      });
+  async uploadImage(url: string, key: string) {
+    try {
+        const res = await axios.get(url, { responseType: 'arraybuffer' });
 
+        const body: Buffer = res.data;
+
+        const params: PutObjectRequest = {
+          Bucket: this.bucketName,
+          Key: key,
+          Body: body,
+        };
+
+        await this.s3.putObject(params).promise();
+        
+    } catch (error) {
+        console.log('Error! ', error);
+    }
   }
 }
-
-
