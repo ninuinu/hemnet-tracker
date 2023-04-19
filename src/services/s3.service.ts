@@ -4,6 +4,7 @@ import { S3 } from 'aws-sdk';
 import { ClientConfiguration } from 'aws-sdk/clients/acm';
 import { PutObjectRequest } from 'aws-sdk/clients/s3';
 import axios from 'axios';
+import {hash} from 'bcrypt';
 
 @Injectable()
 export class S3Service {
@@ -31,9 +32,10 @@ export class S3Service {
   }
 
   async uploadImage(url: string) {
-    // TODO: refactor key to hash(url + timestamp)
 
-    const key = url.split('/').pop();
+    const saltRounds = 10;
+    const key = url + Date.now();
+    const hashedKey = await hash(key, saltRounds);
 
     try {
         const res = await axios.get(url, { responseType: 'arraybuffer' });
@@ -42,7 +44,7 @@ export class S3Service {
 
         const params: PutObjectRequest = {
           Bucket: this.bucketName,
-          Key: key,
+          Key: hashedKey,
           Body: body,
         };
 
