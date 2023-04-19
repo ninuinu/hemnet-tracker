@@ -2,14 +2,15 @@ import { Controller, Get, Post, Query, UploadedFile, UseInterceptors } from '@ne
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from './app.service';
 import { S3Service } from './services/s3.service';
+import { ScrapingService } from './services/scraping.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private readonly s3Service: S3Service) {}
+  constructor(private readonly appService: AppService, private readonly s3Service: S3Service, private readonly scrapingService: ScrapingService) {}
 
   @Get('scrape')
   async getListings(@Query('location_ids') location: string) {
-    return this.appService.getListings(location);
+    return this.scrapingService.scrapeListings(location);
   }
 
   @Post('uploadImage')
