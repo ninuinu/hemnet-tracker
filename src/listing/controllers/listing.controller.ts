@@ -1,15 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ListingService } from '../services/listing.service';
-import { CreateListingDto } from '../dto/create-listing.dto';
-import { UpdateListingDto } from '../dto/update-listing.dto';
 
 @Controller('listing')
 export class ListingController {
   constructor(private readonly listingService: ListingService) {}
 
-  @Post()
-  create(@Body() createListingDto: CreateListingDto) {
-    return this.listingService.create(createListingDto);
+  @Get('scrape')
+  scrape(@Query('location_ids') location: string){
+    return this.listingService.scrape(location);
   }
 
   @Get()
@@ -22,13 +20,4 @@ export class ListingController {
     return this.listingService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateListingDto: UpdateListingDto) {
-    return this.listingService.update(+id, updateListingDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.listingService.remove(+id);
-  }
 }

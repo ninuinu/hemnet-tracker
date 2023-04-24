@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CreateListingDto } from '../dto/create-listing.dto';
-import { UpdateListingDto } from '../dto/update-listing.dto';
+
 
 @Injectable()
 export class ListingService {
-  create(createListingDto: CreateListingDto) {
-    return 'This action adds a new listing';
+
+  scrape(location: string){
+    return 'This action scrapes all listings';
   }
 
   findAll() {
@@ -14,13 +14,5 @@ export class ListingService {
 
   findOne(id: number) {
     return `This action returns a #${id} listing`;
-  }
-
-  update(id: number, updateListingDto: UpdateListingDto) {
-    return `This action updates a #${id} listing`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} listing`;
   }
 }
