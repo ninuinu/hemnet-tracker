@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BucketService } from './bucket.service';
+import { BucketService } from './services/bucket.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({

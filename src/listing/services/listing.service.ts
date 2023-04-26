@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
-import { BucketService } from 'src/bucket/bucket.service';
+import { BucketService } from 'src/bucket/services/bucket.service';
 
 @Injectable()
 export class ListingService {
