@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { S3Service } from './services/s3.service';
-import { ScrapingService } from './services/scraping.service';
 import { ListingModule } from './listing/listing.module';
+import { BucketModule } from './bucket/bucket.module';
 
 
 @Module({
-  imports: [ConfigModule.forRoot(), ListingModule],
-  providers: [S3Service, ScrapingService],
+  imports: [ConfigModule.forRoot(), ListingModule, BucketModule],
 })
 export class AppModule {}

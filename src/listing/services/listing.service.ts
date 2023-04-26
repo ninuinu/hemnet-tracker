@@ -2,12 +2,14 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
+import { BucketService } from 'src/bucket/bucket.service';
 
 @Injectable()
 export class ListingService {
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private bucketService: BucketService) {}
 
   async scrape(location: string){
+    this.bucketService.helloWorld();
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
 
