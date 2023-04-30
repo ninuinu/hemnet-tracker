@@ -4,8 +4,7 @@ import { S3 } from 'aws-sdk';
 import { ClientConfiguration } from 'aws-sdk/clients/acm';
 import { PutObjectRequest } from 'aws-sdk/clients/s3';
 import axios from 'axios';
-import {hash} from 'bcrypt';
-
+import { createHash } from "crypto";
 
 @Injectable()
 export class BucketService {
@@ -32,24 +31,31 @@ export class BucketService {
     this.s3 = new S3(s3Config);
   }
 
-  helloWorld(){
-    console.log("Hello!")
+  async uploadImages(listings){
+    for(const listing of listings){
+      const key = await this.generateKey(listing.image);
+      listing["imageKey"] = key;
+      this.uploadImage(listing);
+    }
   }
 
-  async uploadImage(url: string) {
-
+  async generateKey(url: string){
     const saltRounds = 10;
-    const key = url + Date.now();
-    const hashedKey = await hash(key, saltRounds);
+    const key = Date.now() + url;
+    const hashedKey = createHash('shake256', { outputLength: 8 }).update(key).digest("hex");
+    return hashedKey;
+  }
 
+  async uploadImage(listing: any) {
     try {
-        const res = await axios.get(url, { responseType: 'arraybuffer' });
+        const res = await axios.get(listing.image, { responseType: 'arraybuffer' });
 
+        
         const body: Buffer = res.data;
 
         const params: PutObjectRequest = {
           Bucket: this.bucketName,
-          Key: hashedKey,
+          Key: listing.imageKey,
           Body: body,
         };
 

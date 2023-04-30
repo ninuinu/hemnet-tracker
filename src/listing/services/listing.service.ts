@@ -9,7 +9,6 @@ export class ListingService {
   constructor(private httpService: HttpService, private bucketService: BucketService) {}
 
   async scrape(location: string){
-    this.bucketService.helloWorld();
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
 
@@ -50,7 +49,13 @@ export class ListingService {
       listings.push(listing);
     });
 
-    return listings;
+    try {
+      this.bucketService.uploadImages(listings);
+      return listings;
+
+    } catch (error){
+      return `An error occurred. Error ${error}`;
+    }
   }
 
   findAll() {
