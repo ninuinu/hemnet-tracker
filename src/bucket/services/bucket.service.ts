@@ -33,13 +33,13 @@ export class BucketService {
 
   async uploadImages(listings){
     for(const listing of listings){
-      const key = await this.generateKey(listing.image);
+      const key = this.generateKey(listing.image);
       listing["imageKey"] = key;
       this.uploadImage(listing);
     }
   }
 
-  async generateKey(url: string){
+  generateKey(url: string){
     const saltRounds = 10;
     const key = Date.now() + url;
     const hashedKey = createHash('shake256', { outputLength: 8 }).update(key).digest("hex");
