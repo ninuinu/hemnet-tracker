@@ -26,7 +26,6 @@ export class PrismaService {
     }
 
     async getListings(){
-        console.log("about to get the listings!")
         console.log(await this.prisma.listing.findMany());
     }
 }

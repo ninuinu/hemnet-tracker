@@ -63,7 +63,7 @@ export class BucketService {
         await this.s3.putObject(params).promise();
 
     } catch (error) {
-        console.log('Error! ', error);
+        console.log(`Error! ${error}`);
     }
   }
 }
