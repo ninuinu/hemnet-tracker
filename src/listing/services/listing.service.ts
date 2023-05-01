@@ -3,14 +3,17 @@ import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { BucketService } from 'src/bucket/services/bucket.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ListingService {
-  constructor(private httpService: HttpService, private bucketService: BucketService) {}
+  constructor(private httpService: HttpService, private bucketService: BucketService, private prismaService: PrismaService) {}
 
   async scrape(location: string){
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
+
+    this.prismaService.getListings();
 
     const params = new URLSearchParams();
     params.append("location_ids[]", location);
