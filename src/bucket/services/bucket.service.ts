@@ -33,10 +33,11 @@ export class BucketService {
 
   async uploadImages(listings){
     for(const listing of listings){
-      const key = this.generateKey(listing.image);
+      const key = this.generateKey(listing.imageUrl);
       listing["imageKey"] = key;
       this.uploadImage(listing);
     }
+    return listings;
   }
 
   generateKey(url: string){
@@ -47,9 +48,9 @@ export class BucketService {
   }
 
   async uploadImage(listing: any) {
+    
     try {
         const res = await axios.get(listing.image, { responseType: 'arraybuffer' });
-
         
         const body: Buffer = res.data;
 

@@ -9,23 +9,24 @@ export class PrismaService {
         this.prisma = new PrismaClient()
     }
 
-    async saveListings(){
-        
+    async saveListings(listings){
+        for(const listing of listings){
             await this.prisma.listing.create({
                 data: {
-                    address: "test",
-                    url:      "test",
-                    price:     34,
-                    sqmPrice:  54,
-                    sqmSize:   45,
-                    roomCount: 5,
-                    imageKey:   "test",
-                    imageUrl:  "test",
+                    address:  listing.address,
+                    price:     listing.price,
+                    sqmPrice:  listing.sqmPrice,
+                    sqmSize:   listing.sqmSize,
+                    roomCount: listing.roomCount,
+                    imageKey:   listing.imageKey,
+                    imageUrl:  listing.imageUrl,
                 }
             })
+        }
     }
 
     async getListings(){
+        console.log("about to get the listings!")
         console.log(await this.prisma.listing.findMany());
     }
 }

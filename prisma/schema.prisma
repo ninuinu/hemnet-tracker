@@ -13,11 +13,10 @@ datasource db {
 model Listing {
   id        Int      @id @default(autoincrement())
   address   String
-  url       String   @unique
-  price     Float
-  sqmPrice  Float
-  sqmSize   Float
-  roomCount Int
+  price     String
+  sqmPrice  String
+  sqmSize   String
+  roomCount String
   imageUrl  String
   imageKey  String
   createdAt DateTime @default(now())
