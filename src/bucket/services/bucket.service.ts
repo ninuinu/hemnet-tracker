@@ -51,19 +51,21 @@ export class BucketService {
     
     try {
         const res = await axios.get(listing.image, { responseType: 'arraybuffer' });
-        
         const body: Buffer = res.data;
 
-        const params: PutObjectRequest = {
-          Bucket: this.bucketName,
-          Key: listing.imageKey,
-          Body: body,
-        };
-
+        const params: PutObjectRequest = this.createParams(listing, body);
         await this.s3.putObject(params).promise();
 
     } catch (error) {
         console.log(`Error! ${error}`);
     }
+  }
+
+  private createParams(listing: any, body: Buffer): S3.PutObjectRequest {
+    return {
+      Bucket: this.bucketName,
+      Key: listing.imageKey,
+      Body: body,
+    };
   }
 }

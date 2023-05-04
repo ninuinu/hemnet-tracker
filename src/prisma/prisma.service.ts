@@ -13,13 +13,13 @@ export class PrismaService {
         for(const listing of listings){
             await this.prisma.listing.create({
                 data: {
-                    address:  listing.address,
-                    price:     listing.price,
-                    sqmPrice:  listing.sqmPrice,
-                    sqmSize:   listing.sqmSize,
-                    roomCount: listing.roomCount,
+                    address:    listing.address,
+                    price:      listing.price,
+                    sqmPrice:   listing.sqmPrice,
+                    sqmSize:    listing.sqmSize,
+                    roomCount:  listing.roomCount,
                     imageKey:   listing.imageKey,
-                    imageUrl:  listing.imageUrl,
+                    imageUrl:   listing.imageUrl,
                 }
             })
         }
