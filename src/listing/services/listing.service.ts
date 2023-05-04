@@ -13,9 +13,7 @@ export class ListingService {
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
 
-    const params = new URLSearchParams();
-    params.append("location_ids[]", location);
-    params.append("item_types[]", itemTypes);
+    const params = this.createParams(location, itemTypes);
 
     const response$ = this.httpService.get(baseUrl, { params: params });
     const response = await firstValueFrom(response$);
@@ -63,6 +61,13 @@ export class ListingService {
     } catch (error){
       return `An error occurred. Error ${error}`;
     }
+  }
+
+  private createParams(location: string, itemTypes: string) {
+    const params = new URLSearchParams();
+    params.append("location_ids[]", location);
+    params.append("item_types[]", itemTypes);
+    return params;
   }
 
   getAll() {
