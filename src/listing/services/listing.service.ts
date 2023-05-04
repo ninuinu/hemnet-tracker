@@ -23,6 +23,8 @@ export class ListingService {
     $('li.normal-results__hit').each((_i, element) => {
       const listing = {};
 
+
+
       const image = $(element).find('div.listing-card__images-container > div > img');
       if(image){
         listing['imageUrl'] = image.attr('data-src');
@@ -54,12 +56,12 @@ export class ListingService {
     });
 
     try {
-      const updatedListings = this.bucketService.uploadImages(listings);
+      const updatedListings = await this.bucketService.uploadImages(listings);
       this.prismaService.saveListings(updatedListings);
       return listings;
 
     } catch (error){
-      return `An error occurred. Error ${error}`;
+      return `An error occurred. Error`;
     }
   }
 

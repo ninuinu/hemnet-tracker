@@ -42,23 +42,37 @@ export class BucketService {
 
   generateKey(url: string){
     const saltRounds = 10;
-    const key = Date.now() + url;
+    const key = url; //Date.now() + url;
     const hashedKey = createHash('shake256', { outputLength: 8 }).update(key).digest("hex");
     return hashedKey;
   }
 
-  async uploadImage(listing: any) {
-    
+  async uploadImage(listing: any) {    
     try {
-        const res = await axios.get(listing.image, { responseType: 'arraybuffer' });
+
+        const res = await axios.get(listing.imageUrl, { responseType: 'arraybuffer' });
         const body: Buffer = res.data;
-
         const params: PutObjectRequest = this.createParams(listing, body);
-        await this.s3.putObject(params).promise();
 
+        try{
+          await this.doesKeyExist(params); 
+        } catch (error){
+          if (error.code === 'NotFound') {
+            await this.s3.putObject(params).promise();
+            console.log(`Object ${params.Key} was successfully uploaded to bucket ${params.Bucket}`);
+          } else{
+            console.log(`Error: There was an issue when checking for image. ${error}`);
+          }  
+        }
+        
     } catch (error) {
         console.log(`Error! ${error}`);
     }
+  }
+
+  private async doesKeyExist(params: S3.PutObjectRequest) {
+    await this.s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
+    console.log(`Object ${params.Key} already exists in bucket ${params.Bucket}. Skipping upload.`);
   }
 
   private createParams(listing: any, body: Buffer): S3.PutObjectRequest {
