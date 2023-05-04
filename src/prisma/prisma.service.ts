@@ -25,7 +25,15 @@ export class PrismaService {
         }
     }
 
-    async getListings(){
-        console.log(await this.prisma.listing.findMany());
+    async getAll(){
+        return await this.prisma.listing.findMany();
+    }
+
+    async getOne(id: number){
+        return await this.prisma.listing.findUnique({ 
+            where: {
+                id
+            }
+        });
     }
 }

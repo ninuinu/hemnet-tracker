@@ -11,13 +11,13 @@ export class ListingController {
   }
 
   @Get()
-  findAll() {
-    return this.listingService.findAll();
+  getAll() {
+    return this.listingService.getAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.listingService.findOne(+id);
+  getOne(@Param('id') id: string) {
+    return this.listingService.getOne(+id);
   }
 
 }

@@ -13,8 +13,6 @@ export class ListingService {
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
 
-    this.prismaService.getListings();
-
     const params = new URLSearchParams();
     params.append("location_ids[]", location);
     params.append("item_types[]", itemTypes);
@@ -67,11 +65,11 @@ export class ListingService {
     }
   }
 
-  findAll() {
-    return `This action returns all listing`;
+  getAll() {
+    return this.prismaService.getAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} listing`;
+  getOne(id: number) {
+    return this.prismaService.getOne(id);
   }
 }
