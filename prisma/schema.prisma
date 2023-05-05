@@ -12,6 +12,7 @@ datasource db {
 
 model Listing {
   id        Int      @id @default(autoincrement())
+  url       String
   address   String
   price     String
   sqmPrice  String

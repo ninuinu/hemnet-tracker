@@ -23,7 +23,10 @@ export class ListingService {
     $('li.normal-results__hit').each((_i, element) => {
       const listing = {};
 
-
+      const url = $(element).find('.js-listing-card-link');
+      if(url){
+        listing['url'] = url.attr('href');
+      }
 
       const image = $(element).find('div.listing-card__images-container > div > img');
       if(image){
