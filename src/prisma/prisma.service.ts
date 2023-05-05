@@ -11,6 +11,10 @@ export class PrismaService {
 
     async saveListings(listings){
         for(const listing of listings){
+            const matches = await this.exists(listing);
+            if (matches.length != 0){
+                // register
+            }
             await this.prisma.listing.create({
                 data: {
                     address:    listing.address,
@@ -33,6 +37,16 @@ export class PrismaService {
         return await this.prisma.listing.findUnique({ 
             where: {
                 id
+            }
+        });
+    }
+
+    async exists(listing){
+        return await this.prisma.listing.findMany({
+            where: {
+                roomCount:  listing.roomCount,
+                sqmSize:    listing.sqmSize,
+                address:    listing.address
             }
         });
     }
