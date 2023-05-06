@@ -49,7 +49,6 @@ export class BucketService {
 
   async uploadImage(listing: any) {    
     try {
-
         const res = await axios.get(listing.imageUrl, { responseType: 'arraybuffer' });
         const body: Buffer = res.data;
         const params: PutObjectRequest = this.createParams(listing, body);

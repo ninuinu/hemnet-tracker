@@ -13,19 +13,23 @@ export class PrismaService {
         for(const listing of listings){
             const matches = await this.exists(listing);
             if (matches.length != 0){
-                // register
+                // register 
             }
-            await this.prisma.listing.create({
-                data: {
-                    address:    listing.address,
-                    price:      listing.price,
-                    sqmPrice:   listing.sqmPrice,
-                    sqmSize:    listing.sqmSize,
-                    roomCount:  listing.roomCount,
-                    imageKey:   listing.imageKey,
-                    imageUrl:   listing.imageUrl,
-                }
-            })
+            try {
+                await this.prisma.listing.create({
+                    data: {
+                        address:    listing.address,
+                        price:      listing.price,
+                        sqmPrice:   listing.sqmPrice,
+                        sqmSize:    listing.sqmSize,
+                        roomCount:  listing.roomCount,
+                        imageKey:   listing.imageKey,
+                        imageUrl:   listing.imageUrl,
+                    }
+                })
+            } catch (error){
+                console.log(`An error occured. Could not add listing ${listing.address} to database`);
+            }
         }
     }
 
