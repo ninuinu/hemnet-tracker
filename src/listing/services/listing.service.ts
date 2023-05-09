@@ -7,10 +7,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ListingService {
+  constructor(
+    private httpService: HttpService,
+    private bucketService: BucketService,
+    private prismaService: PrismaService,
+  ) {}
 
-  constructor(private httpService: HttpService, private bucketService: BucketService, private prismaService: PrismaService) {}
-
-  async scrape(location: string){
+  async scrape(location: string) {
     const baseUrl = 'https://www.hemnet.se/bostader?';
     const itemTypes = 'bostadsratt';
 
@@ -22,36 +25,34 @@ export class ListingService {
 
     const listings = this.scrapeAttributes($, location);
 
-    if ($('.next_page')){
-
+    if ($('.next_page')) {
       const link = $('.next_page').attr('href');
-      const hemnetUrl = 'https://www.hemnet.se'
-      
+      const hemnetUrl = 'https://www.hemnet.se';
+
       const response$ = this.httpService.get(hemnetUrl + link);
       const response = await firstValueFrom(response$);
       const $b = cheerio.load(response.data);
 
       const listingsPage2 = this.scrapeAttributes($b, location);
       listings.push(...listingsPage2);
-  }
+    }
 
     try {
       const updatedListings = await this.bucketService.uploadImages(listings);
       this.prismaService.saveListings(updatedListings);
       return listings;
-
-    } catch (error){
+    } catch (error) {
       return `An error occurred. Error`;
     }
   }
 
   private createParams(location: string, itemTypes: string, page?: string) {
     const params = new URLSearchParams();
-    params.append("location_ids[]", location);
-    params.append("item_types[]", itemTypes);
+    params.append('location_ids[]', location);
+    params.append('item_types[]', itemTypes);
 
-    if(typeof page !== 'undefined'){
-      params.append("page", page);
+    if (typeof page !== 'undefined') {
+      params.append('page', page);
     }
 
     return params;
@@ -76,7 +77,9 @@ export class ListingService {
         listing['url'] = url.attr('href');
       }
 
-      const image = $(element).find('div.listing-card__images-container > div > img');
+      const image = $(element).find(
+        'div.listing-card__images-container > div > img',
+      );
       if (image) {
         listing['imageUrl'] = image.attr('data-src');
       }
@@ -86,10 +89,14 @@ export class ListingService {
         listing['address'] = address.text().trim();
       }
 
-      const attributesRow = $(element).find('div.listing-card__attribute--primary');
+      const attributesRow = $(element).find(
+        'div.listing-card__attribute--primary',
+      );
       if (attributesRow) {
-        const infoString = attributesRow.text().trim().split("\n");
-        const info = infoString.filter(function (entry) { return entry.trim() != ''; });
+        const infoString = attributesRow.text().trim().split('\n');
+        const info = infoString.filter(function (entry) {
+          return entry.trim() != '';
+        });
         if (info.length === 3) {
           listing['price'] = info[0].trim();
           listing['sqmSize'] = info[1].trim();
@@ -97,7 +104,14 @@ export class ListingService {
         }
       }
 
-      const price = $(element).find('div.listing-card__attribute--square-meter-price');
+      const fee = $(element).find('div.listing-card__attribute--fee');
+      if (fee) {
+        listing['monthlyFee'] = fee.text().trim();
+      }
+
+      const price = $(element).find(
+        'div.listing-card__attribute--square-meter-price',
+      );
       if (price) {
         listing['sqmPrice'] = price.text().trim();
       }
@@ -106,6 +120,6 @@ export class ListingService {
       listings.push(listing);
     });
 
-    return listings
+    return listings;
   }
 }
