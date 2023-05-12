@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { BucketService } from 'src/bucket/services/bucket.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import puppeteer from 'puppeteer';
 
 @Injectable()
 export class ListingService {
@@ -38,8 +39,10 @@ export class ListingService {
     }
 
     try {
+      this.getDatePublished(listings);
       const updatedListings = await this.bucketService.uploadImages(listings);
-      this.prismaService.saveListings(updatedListings);
+      //this.prismaService.saveListings(updatedListings);
+      //this.prismaService.saveListings(listings);
       return listings;
     } catch (error) {
       return `An error occurred. Error`;
@@ -64,6 +67,75 @@ export class ListingService {
 
   getOne(id: number) {
     return this.prismaService.getOne(id);
+  }
+
+  private async getDatePublished(listings) {
+    const updatedListings = [];
+    for (const listing of listings) {
+      const browser = await puppeteer.launch({ headless: 'new' });
+      try {
+        const page = await browser.newPage();
+        await page.goto(listing.url); //, { waitUntil: 'networkidle2' });
+
+        await this.scrollToBottom(page);
+
+        const datePublishedElement = await page.evaluate(() => {
+          document.scrollingElement.scrollTop = document.body.scrollHeight;
+
+          const elements = Array.from(
+            document.querySelectorAll('.hcl-hint > span'),
+          );
+          return elements.map((element) => element.innerHTML);
+        });
+
+        let datePublishedDescription = datePublishedElement[0].split('</span>');
+        datePublishedDescription = datePublishedDescription[1].split(',');
+        datePublishedDescription = datePublishedDescription[1].split('.');
+        const date = datePublishedDescription[0].replace('den ', '').trim();
+
+        const dateComponents = date.split(' ');
+        console.log('dateComponents', dateComponents);
+
+        const dateInText = {
+          day: dateComponents[0],
+          month: dateComponents[1],
+          year: dateComponents[2],
+        };
+
+        const dateInDigits = this.convertDate(dateInText);
+        listing['datePublished'] = dateInDigits;
+        updatedListings.push(listing);
+      } catch (e) {
+        console.error(`Failed to fetch date for listing ${listing.url}`);
+      } finally {
+        await browser.close();
+      }
+    }
+    console.log(updatedListings);
+    return updatedListings;
+  }
+
+  public convertDate(date) {
+    const months = {
+      januari: '01',
+      februari: '02',
+      mars: '03',
+      april: '04',
+      maj: '05',
+      juni: '06',
+      juli: '07',
+      augusti: '08',
+      september: '09',
+      oktober: '10',
+      november: '11',
+      december: '12',
+    };
+    console.log('date is', date);
+
+    if (date.day.length === 1) {
+      return '0' + date.day + '-' + months[date.month] + '-' + date.year;
+    }
+    return date.day + '-' + months[date.month] + '-' + date.year;
   }
 
   private scrapeAttributes($: cheerio.CheerioAPI, location: string) {
@@ -121,5 +193,24 @@ export class ListingService {
     });
 
     return listings;
+  }
+
+  async scrollToBottom(page): Promise<void> {
+    await page.evaluate(async () => {
+      await new Promise<void>((resolve, reject) => {
+        let totalHeight = 0;
+        const distance = 100;
+        const timer = setInterval(() => {
+          const scrollHeight = document.body.scrollHeight;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+
+          if (totalHeight >= scrollHeight) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 100);
+      });
+    });
   }
 }
