@@ -32,6 +32,8 @@
     "cheerio": "^1.0.0-rc.12",
     "firebase-admin": "^11.5.0",
     "multer": "^1.4.5-lts.1",
+    "puppeteer": "^20.1.2",
+    "puppeteer-core": "^20.1.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },
