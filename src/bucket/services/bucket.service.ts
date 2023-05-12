@@ -4,7 +4,7 @@ import { S3 } from 'aws-sdk';
 import { ClientConfiguration } from 'aws-sdk/clients/acm';
 import { PutObjectRequest } from 'aws-sdk/clients/s3';
 import axios from 'axios';
-import { createHash } from "crypto";
+import { createHash } from 'crypto';
 
 @Injectable()
 export class BucketService {
@@ -31,47 +31,61 @@ export class BucketService {
     this.s3 = new S3(s3Config);
   }
 
-  async uploadImages(listings){
-    for(const listing of listings){
-      const key = this.generateKey(listing.imageUrl);
-      listing["imageKey"] = key;
-      this.uploadImage(listing);
+  async uploadImages(listings) {
+    const PRODUCTION = false;
+    if (PRODUCTION) {
+      for (const listing of listings) {
+        const key = this.generateKey(listing.imageUrl);
+        listing['imageKey'] = key;
+        this.uploadImage(listing);
+      }
+      return listings;
     }
-    return listings;
   }
 
-  generateKey(url: string){
+  generateKey(url: string) {
     const saltRounds = 10;
     const key = url; //Date.now() + url;
-    const hashedKey = createHash('shake256', { outputLength: 8 }).update(key).digest("hex");
+    const hashedKey = createHash('shake256', { outputLength: 8 })
+      .update(key)
+      .digest('hex');
     return hashedKey;
   }
 
-  async uploadImage(listing: any) {    
+  async uploadImage(listing: any) {
     try {
-        const res = await axios.get(listing.imageUrl, { responseType: 'arraybuffer' });
-        const body: Buffer = res.data;
-        const params: PutObjectRequest = this.createParams(listing, body);
+      const res = await axios.get(listing.imageUrl, {
+        responseType: 'arraybuffer',
+      });
+      const body: Buffer = res.data;
+      const params: PutObjectRequest = this.createParams(listing, body);
 
-        try{
-          await this.doesKeyExist(params); 
-        } catch (error){
-          if (error.code === 'NotFound') {
-            await this.s3.putObject(params).promise();
-            console.log(`Object ${params.Key} was successfully uploaded to bucket ${params.Bucket}`);
-          } else{
-            console.log(`Error: There was an issue when checking for image. ${error}`);
-          }  
+      try {
+        await this.doesKeyExist(params);
+      } catch (error) {
+        if (error.code === 'NotFound') {
+          await this.s3.putObject(params).promise();
+          console.log(
+            `Object ${params.Key} was successfully uploaded to bucket ${params.Bucket}`,
+          );
+        } else {
+          console.log(
+            `Error: There was an issue when checking for image. ${error}`,
+          );
         }
-        
+      }
     } catch (error) {
-        console.log(`Error! ${error}`);
+      console.log(`Error! ${error}`);
     }
   }
 
   private async doesKeyExist(params: S3.PutObjectRequest) {
-    await this.s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
-    console.log(`Object ${params.Key} already exists in bucket ${params.Bucket}. Skipping upload.`);
+    await this.s3
+      .headObject({ Bucket: params.Bucket, Key: params.Key })
+      .promise();
+    console.log(
+      `Object ${params.Key} already exists in bucket ${params.Bucket}. Skipping upload.`,
+    );
   }
 
   private createParams(listing: any, body: Buffer): S3.PutObjectRequest {
