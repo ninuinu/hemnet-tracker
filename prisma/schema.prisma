@@ -10,16 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Listing {
-  id         Int      @id @default(autoincrement())
-  url        String
-  address    String
-  price      String
-  sqmPrice   String
-  sqmSize    String
-  monthlyFee String
-  roomCount  String
-  imageUrl   String
-  imageKey   String
-  createdAt  DateTime @default(now())
+model listing {
+  id              Int      @id @default(autoincrement())
+  url             String
+  address         String
+  price           String
+  sqmPrice        String
+  sqmSize         String
+  monthlyFee      String
+  roomCount       String
+  imageUrl        String
+  //  imageKey        String
+  hemnetListingId String
+  createdAt       DateTime @default(now())
 }
