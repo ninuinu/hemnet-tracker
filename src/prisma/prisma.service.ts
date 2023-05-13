@@ -24,14 +24,17 @@ export class PrismaService {
             sqmPrice: listing.sqmPrice,
             sqmSize: listing.sqmSize,
             roomCount: listing.roomCount,
-            imageKey: listing.imageKey,
             imageUrl: listing.imageUrl,
+            url: listing.url,
+            monthlyFee: listing.monthlyFee,
+            hemnetListingId: listing.hemnetListingId,
           },
         });
       } catch (error) {
         console.log(
-          `An error occured. Could not add listing ${listing.address} to database`,
+          `An error occured. Could not add listing ${listing.address} to database.`,
         );
+        console.error(error);
       }
     }
   }
