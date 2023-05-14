@@ -23,5 +23,6 @@ model listing {
   //  imageKey        String
   hemnetListingId String
   datePublished   String
+  locationId      String
   createdAt       DateTime @default(now())
 }

@@ -29,6 +29,7 @@ export class PrismaService {
             monthlyFee: listing.monthlyFee,
             hemnetListingId: listing.hemnetListingId,
             datePublished: listing.datePublished,
+            locationId: listing.locationId,
           },
         });
       } catch (error) {
