@@ -39,13 +39,12 @@ export class ListingService {
     }
 
     try {
-      this.getDatePublished(listings);
-      const updatedListings = await this.bucketService.uploadImages(listings);
-      //this.prismaService.saveListings(updatedListings);
-      //this.prismaService.saveListings(listings);
+      const updatedListings = await this.getDatePublished(listings);
+      //const updatedListings = await this.bucketService.uploadImages(listings);
+      this.prismaService.saveListings(updatedListings);
       return listings;
     } catch (error) {
-      return `An error occurred. Error`;
+      console.error(`An error occurred. ${error}`);
     }
   }
 
@@ -147,6 +146,8 @@ export class ListingService {
       const url = $(element).find('.js-listing-card-link');
       if (url) {
         listing['url'] = url.attr('href');
+        const urlComponents = url.attr('href').split('-');
+        listing['hemnetListingId'] = urlComponents.pop();
       }
 
       const image = $(element).find(
