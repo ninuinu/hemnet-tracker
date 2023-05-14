@@ -22,5 +22,6 @@ model listing {
   imageUrl        String
   //  imageKey        String
   hemnetListingId String
+  datePublished   String
   createdAt       DateTime @default(now())
 }
