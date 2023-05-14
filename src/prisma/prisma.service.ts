@@ -28,6 +28,7 @@ export class PrismaService {
             url: listing.url,
             monthlyFee: listing.monthlyFee,
             hemnetListingId: listing.hemnetListingId,
+            datePublished: listing.datePublished,
           },
         });
       } catch (error) {
