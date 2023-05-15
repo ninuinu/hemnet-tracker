@@ -11,11 +11,11 @@ export class PrismaService {
 
   async saveListings(listings) {
     for (const listing of listings) {
-      const matches = await this.exists(listing);
-      console.log('matches is', matches);
-      if (matches.length != 0) {
-        // register
-      }
+      //const matches = await this.exists(listing);
+      //console.log('matches is', matches);
+      //if (matches.length != 0) {
+      // register
+      //}
       try {
         await this.prisma.listing.create({
           data: {
