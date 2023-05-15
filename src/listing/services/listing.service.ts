@@ -1,10 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
+import { elementAt, firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { BucketService } from 'src/bucket/services/bucket.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer from 'puppeteer';
+import { DateInWords } from '../types';
+import { add } from 'cheerio/lib/api/traversing';
 
 @Injectable()
 export class ListingService {
@@ -42,7 +44,7 @@ export class ListingService {
       const updatedListings = await this.getDatePublished(listings);
       //const updatedListings = await this.bucketService.uploadImages(listings);
       this.prismaService.saveListings(updatedListings);
-      return listings;
+      return updatedListings;
     } catch (error) {
       console.error(`An error occurred. ${error}`);
     }
@@ -71,12 +73,52 @@ export class ListingService {
   private async getDatePublished(listings) {
     const updatedListings = [];
     for (const listing of listings) {
-      const browser = await puppeteer.launch({ headless: 'new' });
+      const browser = await puppeteer.launch({
+        args: ['--shm-size=3gb'],
+        headless: 'new',
+      });
       try {
+        console.log('hello');
         const page = await browser.newPage();
-        await page.goto(listing.url); //, { waitUntil: 'networkidle2' });
+        await page.goto(listing.url);
+        console.log('going to url', listing.url);
 
         await this.scrollToBottom(page);
+
+        const floorComponents = await page.evaluate(() => {
+          const floorElements = Array.from(
+            document.querySelectorAll(
+              '.qa-floor-attribute > .property-attributes-table__value',
+            ),
+          );
+          return floorElements.map((element) =>
+            element.innerHTML.replace('\n', '').trim().split(','),
+          );
+        });
+
+        const floorAndElevator = floorComponents.pop();
+        if (floorAndElevator !== undefined) {
+          listing['floor'] = floorAndElevator[0].trim();
+          listing['elevator'] = floorAndElevator[1].trim();
+        }
+
+        const balconyElement = await page.evaluate(() => {
+          const floorElements = Array.from(
+            document.querySelectorAll(
+              '.qa-balcony-attribute > .property-attributes-table__value',
+            ),
+          );
+          return floorElements.map((element) =>
+            element.innerHTML.replace('\n', '').trim().split(','),
+          );
+        });
+
+        const balcony = balconyElement.pop();
+        if (balcony !== undefined) {
+          listing['balcony'] = balcony.pop();
+        }
+
+        console.log('balcony', listing.balcony);
 
         const datePublishedElement = await page.evaluate(() => {
           document.scrollingElement.scrollTop = document.body.scrollHeight;
@@ -93,28 +135,29 @@ export class ListingService {
         const date = datePublishedDescription[0].replace('den ', '').trim();
 
         const dateComponents = date.split(' ');
-        console.log('dateComponents', dateComponents);
 
-        const dateInText = {
+        const dateInWords: DateInWords = {
           day: dateComponents[0],
           month: dateComponents[1],
           year: dateComponents[2],
         };
 
-        const dateInDigits = this.convertDate(dateInText);
+        const dateInDigits = this.convertDate(dateInWords);
         listing['datePublished'] = dateInDigits;
+
         updatedListings.push(listing);
-      } catch (e) {
-        console.error(`Failed to fetch date for listing ${listing.url}`);
+      } catch (error) {
+        console.error(
+          `Failed to fetch date for listing ${listing.url}: ${error}`,
+        );
       } finally {
         await browser.close();
       }
     }
-    console.log(updatedListings);
     return updatedListings;
   }
 
-  public convertDate(date) {
+  public convertDate(date: DateInWords): string {
     const months = {
       januari: '01',
       februari: '02',
@@ -129,7 +172,6 @@ export class ListingService {
       november: '11',
       december: '12',
     };
-    console.log('date is', date);
 
     if (date.day.length === 1) {
       return '0' + date.day + '-' + months[date.month] + '-' + date.year;
@@ -159,7 +201,13 @@ export class ListingService {
 
       const address = $(element).find('h2.listing-card__street-address');
       if (address) {
-        listing['address'] = address.text().trim();
+        const fullAddress = address.text().trim();
+        if (fullAddress.includes(',')) {
+          const streetAddress = fullAddress.split(',')[0];
+          listing['address'] = streetAddress;
+        } else {
+          listing['address'] = fullAddress;
+        }
       }
 
       const attributesRow = $(element).find(
@@ -171,25 +219,31 @@ export class ListingService {
           return entry.trim() != '';
         });
         if (info.length === 3) {
-          listing['price'] = info[0].trim();
-          listing['sqmSize'] = info[1].trim();
-          listing['roomCount'] = info[2].trim();
+          listing['price'] = parseInt(
+            info[0].replace('kr', '').replace(/\s/g, '').trim(),
+          );
+          listing['sqmSize'] = info[1].replace('m²', '').trim();
+          listing['roomCount'] = info[2].replace('rum', '').trim();
         }
       }
 
       const fee = $(element).find('div.listing-card__attribute--fee');
       if (fee) {
-        listing['monthlyFee'] = fee.text().trim();
+        listing['monthlyFee'] = parseInt(
+          fee.text().replace('kr/mån', '').replace(/\s/g, '').trim(),
+        );
       }
 
       const price = $(element).find(
         'div.listing-card__attribute--square-meter-price',
       );
       if (price) {
-        listing['sqmPrice'] = price.text().trim();
+        listing['sqmPrice'] = parseInt(
+          price.text().replace('kr/m²', '').replace(/\s/g, '').trim(),
+        );
       }
 
-      listing['locationId'] = location;
+      listing['locationId'] = parseInt(location);
       listings.push(listing);
     });
 
