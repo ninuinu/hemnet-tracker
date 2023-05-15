@@ -14,15 +14,15 @@ model listing {
   id              Int      @id @default(autoincrement())
   url             String
   address         String
-  price           String
-  sqmPrice        String
+  price           Int
+  sqmPrice        Int?
   sqmSize         String
-  monthlyFee      String
+  monthlyFee      Int
   roomCount       String
   imageUrl        String
   //  imageKey        String
   hemnetListingId String
   datePublished   String
-  locationId      String
+  locationId      Int
   createdAt       DateTime @default(now())
 }
