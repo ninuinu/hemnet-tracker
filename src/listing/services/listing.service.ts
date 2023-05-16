@@ -23,7 +23,9 @@ export class ListingService {
     const params = this.createParams(location, itemTypes);
 
     const response$ = this.httpService.get(baseUrl, { params: params });
+
     const response = await firstValueFrom(response$);
+
     const $ = cheerio.load(response.data);
 
     const listings = this.scrapeAttributes($, location);
@@ -78,10 +80,8 @@ export class ListingService {
         headless: 'new',
       });
       try {
-        console.log('hello');
         const page = await browser.newPage();
         await page.goto(listing.url);
-        console.log('going to url', listing.url);
 
         await this.scrollToBottom(page);
 
@@ -116,9 +116,9 @@ export class ListingService {
         const balcony = balconyElement.pop();
         if (balcony !== undefined) {
           listing['balcony'] = balcony.pop();
+        } else {
+          listing['balcony'] = 'Nej';
         }
-
-        console.log('balcony', listing.balcony);
 
         const datePublishedElement = await page.evaluate(() => {
           document.scrollingElement.scrollTop = document.body.scrollHeight;
