@@ -11,7 +11,7 @@ datasource db {
 }
 
 model listing {
-  id              Int      @id @default(autoincrement())
+  id              Int    @id @default(autoincrement())
   url             String
   address         String
   price           Int
@@ -24,5 +24,9 @@ model listing {
   hemnetListingId String
   datePublished   String
   locationId      Int
-  createdAt       DateTime @default(now())
+  balcony         String
+  floor           String
+  elevator        String
+
+  createdAt DateTime @default(now())
 }
