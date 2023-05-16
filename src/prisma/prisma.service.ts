@@ -30,6 +30,9 @@ export class PrismaService {
             hemnetListingId: listing.hemnetListingId,
             datePublished: listing.datePublished,
             locationId: listing.locationId,
+            balcony: listing.balcony,
+            floor: listing.floor,
+            elevator: listing.elevator,
           },
         });
       } catch (error) {
