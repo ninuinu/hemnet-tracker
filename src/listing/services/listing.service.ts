@@ -1,12 +1,11 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { elementAt, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { BucketService } from 'src/bucket/services/bucket.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer from 'puppeteer';
-import { DateInWords } from '../types';
-import { add } from 'cheerio/lib/api/traversing';
+import { DateInWords, day, month, year } from '../types';
 
 @Injectable()
 export class ListingService {
@@ -36,10 +35,10 @@ export class ListingService {
 
       const response$ = this.httpService.get(hemnetUrl + link);
       const response = await firstValueFrom(response$);
-      const $b = cheerio.load(response.data);
+      const $nextPage = cheerio.load(response.data);
 
-      const listingsPage2 = this.scrapeAttributes($b, location);
-      listings.push(...listingsPage2);
+      const listingsOnNextPage = this.scrapeAttributes($nextPage, location);
+      listings.push(...listingsOnNextPage);
     }
 
     try {
@@ -137,9 +136,9 @@ export class ListingService {
         const dateComponents = date.split(' ');
 
         const dateInWords: DateInWords = {
-          day: dateComponents[0],
-          month: dateComponents[1],
-          year: dateComponents[2],
+          day: dateComponents[0] as day,
+          month: dateComponents[1] as month,
+          year: dateComponents[2] as year,
         };
 
         const dateInDigits = this.convertDate(dateInWords);
@@ -158,7 +157,7 @@ export class ListingService {
   }
 
   public convertDate(date: DateInWords): string {
-    const months = {
+    const monthMap = {
       januari: '01',
       februari: '02',
       mars: '03',
@@ -174,9 +173,9 @@ export class ListingService {
     };
 
     if (date.day.length === 1) {
-      return '0' + date.day + '-' + months[date.month] + '-' + date.year;
+      return '0' + date.day + '-' + monthMap[date.month] + '-' + date.year;
     }
-    return date.day + '-' + months[date.month] + '-' + date.year;
+    return date.day + '-' + monthMap[date.month] + '-' + date.year;
   }
 
   private scrapeAttributes($: cheerio.CheerioAPI, location: string) {
