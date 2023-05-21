@@ -4,8 +4,9 @@ import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { BucketService } from 'src/bucket/services/bucket.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import puppeteer from 'puppeteer';
+import puppeteer, { Page } from 'puppeteer';
 import { DateInWords, day, month, year } from '../types';
+import { Listing } from '../types/Listing.type';
 
 @Injectable()
 export class ListingService {
@@ -71,7 +72,7 @@ export class ListingService {
     return this.prismaService.getOne(id);
   }
 
-  private async getDatePublished(listings) {
+  private async getDatePublished(listings: Listing[]) {
     const updatedListings = [];
     for (const listing of listings) {
       const browser = await puppeteer.launch({
@@ -249,7 +250,7 @@ export class ListingService {
     return listings;
   }
 
-  async scrollToBottom(page): Promise<void> {
+  async scrollToBottom(page: Page): Promise<void> {
     await page.evaluate(async () => {
       await new Promise<void>((resolve, reject) => {
         let totalHeight = 0;
