@@ -11,11 +11,9 @@ export class PrismaService {
 
   async saveListings(listings) {
     for (const listing of listings) {
-      //const matches = await this.exists(listing);
-      //console.log('matches is', matches);
-      //if (matches.length != 0) {
-      // register
-      //}
+      this.checkMatchByHemnetListingId(listing);
+      //this.checkMatchByListingProperties(listing);
+
       try {
         await this.prisma.listing.create({
           data: {
@@ -37,9 +35,8 @@ export class PrismaService {
         });
       } catch (error) {
         console.log(
-          `An error occured. Could not add listing ${listing.address} to database.`,
+          `An error occured. Could not add listing ${listing.address} to database: ${error}`,
         );
-        console.error(error);
       }
     }
   }
@@ -64,5 +61,38 @@ export class PrismaService {
         address: listing.address,
       },
     });
+  }
+
+  async getHemnetListingIdMatch(listing) {
+    return await this.prisma.listing.findFirst({
+      where: {
+        hemnetListingId: listing.hemnetListingId,
+      },
+    });
+  }
+
+  async checkMatchByHemnetListingId(listing) {
+    const match = await this.getHemnetListingIdMatch(listing);
+    if (match) {
+      try {
+        if (match.datePublished != listing.datePublished) {
+          await this.prisma.match.create({
+            data: {
+              hemnetListingId: listing.hemnetListingId,
+            },
+          });
+        }
+      } catch (error) {
+        console.error(
+          `Failed to att match with hemnetListingId ${listing.hemnetListingId}: ${error}`,
+        );
+      }
+    }
+  }
+
+  async checkMatchByListingProperties(listing) {
+    const match = await this.exists(listing);
+    if (match.length > 0) {
+    }
   }
 }
