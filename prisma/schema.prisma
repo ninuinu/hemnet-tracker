@@ -15,18 +15,24 @@ model listing {
   url             String
   address         String
   price           Int
-  sqmPrice        Int?
+  sqmPrice        Int
   sqmSize         String
   monthlyFee      Int
   roomCount       String
   imageUrl        String
-  //  imageKey        String
   hemnetListingId String
   datePublished   String
   locationId      Int
   balcony         String
   floor           String
   elevator        String
+  //imageKey      String
 
   createdAt DateTime @default(now())
+}
+
+model match {
+  id              Int      @id @default(autoincrement())
+  hemnetListingId String   @unique
+  createdAt       DateTime @default(now())
 }
