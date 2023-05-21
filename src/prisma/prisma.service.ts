@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Listing } from 'src/listing/types/Listing.type';
 
 @Injectable()
 export class PrismaService {
@@ -9,9 +10,9 @@ export class PrismaService {
     this.prisma = new PrismaClient();
   }
 
-  async saveListings(listings) {
+  async saveListings(listings: Listing[]) {
     for (const listing of listings) {
-      this.checkMatchByHemnetListingId(listing);
+      const match = this.checkMatchByHemnetListingId(listing);
       //this.checkMatchByListingProperties(listing);
 
       try {
@@ -53,7 +54,7 @@ export class PrismaService {
     });
   }
 
-  async exists(listing) {
+  async exists(listing: Listing) {
     return await this.prisma.listing.findMany({
       where: {
         roomCount: listing.roomCount,
@@ -63,7 +64,7 @@ export class PrismaService {
     });
   }
 
-  async getHemnetListingIdMatch(listing) {
+  async getHemnetListingIdMatch(listing: Listing) {
     return await this.prisma.listing.findFirst({
       where: {
         hemnetListingId: listing.hemnetListingId,
@@ -71,7 +72,7 @@ export class PrismaService {
     });
   }
 
-  async checkMatchByHemnetListingId(listing) {
+  async checkMatchByHemnetListingId(listing: Listing) {
     const match = await this.getHemnetListingIdMatch(listing);
     if (match) {
       try {
@@ -81,6 +82,9 @@ export class PrismaService {
               hemnetListingId: listing.hemnetListingId,
             },
           });
+          return true;
+        } else {
+          return false;
         }
       } catch (error) {
         console.error(
@@ -90,9 +94,11 @@ export class PrismaService {
     }
   }
 
-  async checkMatchByListingProperties(listing) {
+  async checkMatchByListingProperties(listing: Listing) {
     const match = await this.exists(listing);
     if (match.length > 0) {
     }
   }
 }
+
+// TODO: add check for "if address, sqm, roomcount the same AND date published the same => don't save to listing table"
