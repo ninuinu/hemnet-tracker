@@ -1,12 +1,22 @@
 version: "3"
 
 services:
-  db:
+  db-prod:
     image: postgres
     restart: always
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PROD_PORT}:5432
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: 'local-hemnet-tracker'
+      POSTGRES_DB: 'hemnet-tracker-prod'
+
+  db-dev:
+    image: postgres
+    restart: always
+    ports:
+      - ${POSTGRES_DEV_PORT}:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: 'hemnet-tracker-dev'
