@@ -10,6 +10,9 @@ import { Listing } from '../types/Listing.type';
 
 @Injectable()
 export class ListingService {
+  BASEURL = 'https://www.hemnet.se/bostader?';
+  ITEM_TYPES = 'bostadsratt';
+
   constructor(
     private httpService: HttpService,
     private bucketService: BucketService,
@@ -17,12 +20,9 @@ export class ListingService {
   ) {}
 
   async scrape(location: string) {
-    const baseUrl = 'https://www.hemnet.se/bostader?';
-    const itemTypes = 'bostadsratt';
+    const params = this.createParams(location);
 
-    const params = this.createParams(location, itemTypes);
-
-    const response$ = this.httpService.get(baseUrl, { params: params });
+    const response$ = this.httpService.get(this.BASEURL, { params: params });
 
     const response = await firstValueFrom(response$);
 
@@ -45,6 +45,8 @@ export class ListingService {
     try {
       const updatedListings = await this.getDatePublished(listings);
       //const updatedListings = await this.bucketService.uploadImages(listings);
+
+      console.log(updatedListings);
       this.prismaService.saveListings(updatedListings);
       return updatedListings;
     } catch (error) {
@@ -52,12 +54,12 @@ export class ListingService {
     }
   }
 
-  private createParams(location: string, itemTypes: string, page?: string) {
+  private createParams(location: string, page?: string): URLSearchParams {
     const params = new URLSearchParams();
     params.append('location_ids[]', location);
-    params.append('item_types[]', itemTypes);
+    params.append('item_types[]', this.ITEM_TYPES);
 
-    if (typeof page !== 'undefined') {
+    if (page) {
       params.append('page', page);
     }
 
@@ -100,6 +102,9 @@ export class ListingService {
         if (floorAndElevator !== undefined) {
           listing['floor'] = floorAndElevator[0].trim();
           listing['elevator'] = floorAndElevator[1].trim();
+        } else {
+          listing['floor'] = '';
+          listing['elevator'] = '';
         }
 
         const balconyElement = await page.evaluate(() => {
@@ -117,7 +122,7 @@ export class ListingService {
         if (balcony !== undefined) {
           listing['balcony'] = balcony.pop();
         } else {
-          listing['balcony'] = 'Nej';
+          listing['balcony'] = '';
         }
 
         const datePublishedElement = await page.evaluate(() => {
@@ -148,7 +153,7 @@ export class ListingService {
         updatedListings.push(listing);
       } catch (error) {
         console.error(
-          `Failed to fetch date for listing ${listing.url}: ${error}`,
+          `Failed to fetch date for listing ${listing.url}: ${error} \n floor: ${listing.floor}\n balcony: ${listing.balcony} \n elevator: ${listing.elevator} \n datePublished: ${listing.datePublished}`,
         );
       } finally {
         await browser.close();
@@ -183,9 +188,18 @@ export class ListingService {
     const listings = [];
 
     $('li.normal-results__hit').each((_i, element) => {
+      if (element.attribs.class.includes('recommendation')) {
+        return;
+      }
+
       const listing = {};
 
       const url = $(element).find('.js-listing-card-link');
+
+      if (url.attr('class').includes('deactivated')) {
+        return;
+      }
+
       if (url) {
         listing['url'] = url.attr('href');
         const urlComponents = url.attr('href').split('-');
