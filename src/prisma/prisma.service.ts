@@ -31,6 +31,7 @@ export class PrismaService {
             locationId: listing.locationId,
             balcony: listing.balcony,
             floor: listing.floor,
+            patio: listing.patio,
             elevator: listing.elevator,
           },
         });

@@ -24,6 +24,7 @@ model listing {
   datePublished   String
   locationId      Int
   balcony         String
+  patio           String
   floor           String
   elevator        String
   //imageKey      String
