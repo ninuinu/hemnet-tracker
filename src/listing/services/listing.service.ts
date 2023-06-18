@@ -7,11 +7,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer, { Page } from 'puppeteer';
 import { DateInWords, day, month, year } from '../types';
 import { Listing } from '../types/Listing.type';
+import { readlink } from 'fs';
 
 @Injectable()
 export class ListingService {
   BASEURL = 'https://www.hemnet.se/bostader?';
   ITEM_TYPES = 'bostadsratt';
+  LISTINGS: Listing[] = [];
 
   constructor(
     private httpService: HttpService,
@@ -46,7 +48,6 @@ export class ListingService {
       const updatedListings = await this.getDatePublished(listings);
       //const updatedListings = await this.bucketService.uploadImages(listings);
 
-      console.log(updatedListings);
       this.prismaService.saveListings(updatedListings);
       return updatedListings;
     } catch (error) {
@@ -84,7 +85,6 @@ export class ListingService {
       try {
         const page = await browser.newPage();
         await page.goto(listing.url);
-
         await this.scrollToBottom(page);
 
         const floorComponents = await page.evaluate(() => {
@@ -99,9 +99,19 @@ export class ListingService {
         });
 
         const floorAndElevator = floorComponents.pop();
+        console.log('floorAndElevator: ', floorAndElevator);
+
         if (floorAndElevator !== undefined) {
-          listing['floor'] = floorAndElevator[0].trim();
-          listing['elevator'] = floorAndElevator[1].trim();
+          if (floorAndElevator.length === 1) {
+            listing['floor'] = floorAndElevator.pop().trim();
+            listing['elevator'] = '';
+          } else if (floorAndElevator.length === 2) {
+            listing['floor'] = floorAndElevator[0].trim();
+            listing['elevator'] = floorAndElevator[1].trim();
+          } else {
+            listing['floor'] = '';
+            listing['elevator'] = '';
+          }
         } else {
           listing['floor'] = '';
           listing['elevator'] = '';
@@ -114,15 +124,31 @@ export class ListingService {
             ),
           );
           return floorElements.map((element) =>
-            element.innerHTML.replace('\n', '').trim().split(','),
+            element.innerHTML.replace('\n', '').trim(),
           );
         });
 
-        const balcony = balconyElement.pop();
-        if (balcony !== undefined) {
-          listing['balcony'] = balcony.pop();
+        if (balconyElement.length > 0) {
+          listing['balcony'] = balconyElement.pop();
         } else {
           listing['balcony'] = '';
+        }
+
+        const patioElement = await page.evaluate(() => {
+          const patioElement = Array.from(
+            document.querySelectorAll(
+              '.qa-patio-attribute > .property-attributes-table__value',
+            ),
+          );
+          return patioElement.map((element) =>
+            element.innerHTML.replace('\n', '').trim(),
+          );
+        });
+
+        if (patioElement.length > 0) {
+          listing['patio'] = patioElement.pop();
+        } else {
+          listing['patio'] = '';
         }
 
         const datePublishedElement = await page.evaluate(() => {
@@ -232,6 +258,10 @@ export class ListingService {
         const info = infoString.filter(function (entry) {
           return entry.trim() != '';
         });
+
+        if (info.length === 4) {
+          info.splice(2, 1);
+        }
         if (info.length === 3) {
           listing['price'] = parseInt(
             info[0].replace('kr', '').replace(/\s/g, '').trim(),
