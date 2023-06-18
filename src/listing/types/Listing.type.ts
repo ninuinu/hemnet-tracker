@@ -12,5 +12,6 @@ export type Listing = {
   locationId: number;
   balcony: string;
   floor: string;
+  patio: string;
   elevator: string;
 };
