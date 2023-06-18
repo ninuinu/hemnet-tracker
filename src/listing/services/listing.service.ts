@@ -94,16 +94,38 @@ export class ListingService {
             ),
           );
           return floorElements.map((element) =>
-            element.innerHTML.replace('\n', '').trim().split(','),
+            element.innerHTML.replace('\n', '').trim(),
           );
         });
 
         const floorAndElevator = floorComponents.pop();
-        console.log('floorAndElevator: ', floorAndElevator);
+        console.log(
+          'Processing listing',
+          listing.address,
+          ', floorAndElevator: ',
+          floorAndElevator,
+        );
 
         if (floorAndElevator !== undefined) {
+          if (floorAndElevator.includes('hiss')) {
+            if (floorAndElevator.split(',').length - 1 == 2) {
+              const indexToSplitOn = floorAndElevator.lastIndexOf(',');
+              listing['floor'] = floorAndElevator
+                .slice(0, indexToSplitOn)
+                .trim();
+              listing['elevator'] = floorAndElevator
+                .slice(indexToSplitOn + 1)
+                .trim();
+              console.log(
+                'floor:',
+                listing.floor,
+                ', elevator:',
+                listing.elevator,
+              );
+            }
+          }
           if (floorAndElevator.length === 1) {
-            listing['floor'] = floorAndElevator.pop().trim();
+            listing['floor'] = floorAndElevator.trim();
             listing['elevator'] = '';
           } else if (floorAndElevator.length === 2) {
             listing['floor'] = floorAndElevator[0].trim();
