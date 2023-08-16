@@ -116,28 +116,31 @@ export class ListingService {
               listing['elevator'] = floorAndElevator
                 .slice(indexToSplitOn + 1)
                 .trim();
-              console.log(
-                'floor:',
-                listing.floor,
-                ', elevator:',
-                listing.elevator,
-              );
+            } else {
+              listing['floor'] = floorAndElevator.split(',')[0].trim();
+              listing['elevator'] = floorAndElevator.split(',')[1].trim();
             }
-          }
-          if (floorAndElevator.length === 1) {
-            listing['floor'] = floorAndElevator.trim();
-            listing['elevator'] = '';
-          } else if (floorAndElevator.length === 2) {
-            listing['floor'] = floorAndElevator[0].trim();
-            listing['elevator'] = floorAndElevator[1].trim();
           } else {
-            listing['floor'] = '';
-            listing['elevator'] = '';
+            if (floorAndElevator.length === 1) {
+              listing['floor'] = floorAndElevator.trim();
+              listing['elevator'] = '';
+            } else {
+              listing['floor'] = '';
+              listing['elevator'] = '';
+            }
           }
         } else {
           listing['floor'] = '';
           listing['elevator'] = '';
         }
+
+        console.log(
+          'Listing floor: ',
+          listing['floor'],
+          'elevator: ',
+          listing['elevator'],
+        );
+        console.log('\n');
 
         const balconyElement = await page.evaluate(() => {
           const floorElements = Array.from(
@@ -294,19 +297,24 @@ export class ListingService {
       }
 
       const fee = $(element).find('div.listing-card__attribute--fee');
-      if (fee) {
+
+      if (fee.text() !== '') {
         listing['monthlyFee'] = parseInt(
           fee.text().replace('kr/mån', '').replace(/\s/g, '').trim(),
         );
+      } else {
+        listing['monthlyFee'] = '';
       }
 
       const price = $(element).find(
         'div.listing-card__attribute--square-meter-price',
       );
-      if (price) {
+      if (price.text() !== '') {
         listing['sqmPrice'] = parseInt(
           price.text().replace('kr/m²', '').replace(/\s/g, '').trim(),
         );
+      } else {
+        listing['sqmPrice'] = '';
       }
 
       listing['locationId'] = parseInt(location);
@@ -315,6 +323,9 @@ export class ListingService {
 
     return listings;
   }
+
+  // AGAVÄGEN 7 -
+  // monthly fee -NaN, sqmPrice - Nan
 
   async scrollToBottom(page: Page): Promise<void> {
     await page.evaluate(async () => {
