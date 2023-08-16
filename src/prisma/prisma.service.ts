@@ -16,6 +16,9 @@ export class PrismaService {
       //this.checkMatchByListingProperties(listing);
 
       try {
+        console.log(`Saving listing ${listing.address} to database...`);
+        console.log(listing);
+        console.log('\n');
         await this.prisma.listing.create({
           data: {
             address: listing.address,
