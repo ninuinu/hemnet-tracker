@@ -20,7 +20,7 @@ model listing {
   monthlyFee      Int
   roomCount       String
   imageUrl        String
-  hemnetListingId String @unique
+  hemnetListingId String 
   datePublished   String
   locationId      Int
   balcony         String
@@ -30,6 +30,7 @@ model listing {
   //imageKey      String
 
   createdAt DateTime @default(now())
+  @@unique([hemnetListingId, datePublished])
 }
 
 model match {
