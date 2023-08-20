@@ -20,7 +20,7 @@ model listing {
   monthlyFee      Int
   roomCount       String
   imageUrl        String
-  hemnetListingId String
+  hemnetListingId String @unique
   datePublished   String
   locationId      Int
   balcony         String
