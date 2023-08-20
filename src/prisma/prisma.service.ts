@@ -11,6 +11,9 @@ export class PrismaService {
   }
 
   async saveListings(listings: Listing[]) {
+    let successfulWrite = 0;
+    let failedWrite = 0;
+
     for (const listing of listings) {
       const match = this.checkMatchByHemnetListingId(listing);
       //this.checkMatchByListingProperties(listing);
@@ -38,12 +41,17 @@ export class PrismaService {
             elevator: listing.elevator,
           },
         });
+        successfulWrite++;
       } catch (error) {
         console.log(
           `An error occured. Could not add listing ${listing.address} to database: ${error}`,
         );
+        failedWrite++;
       }
     }
+    console.log(
+      `\n\n${successfulWrite} listings added to database.\n${failedWrite} listings failed to add to database.`,
+    );
   }
 
   async getAll() {
