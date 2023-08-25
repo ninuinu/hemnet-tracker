@@ -19,9 +19,6 @@ export class PrismaService {
       //this.checkMatchByListingProperties(listing);
 
       try {
-        console.log(`Saving listing ${listing.address} to database...`);
-        console.log(listing);
-        console.log('\n');
         await this.prisma.listing.create({
           data: {
             address: listing.address,
@@ -44,8 +41,9 @@ export class PrismaService {
         successfulWrite++;
       } catch (error) {
         console.log(
-          `An error occured. Could not add listing ${listing.address} to database: ${error}`,
+          `An error occured. Could not add listing ${listing.address} to database.\n`,
         );
+        console.log(listing);
         failedWrite++;
       }
     }
