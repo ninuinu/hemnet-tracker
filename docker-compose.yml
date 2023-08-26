@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   db-prod:
@@ -16,7 +16,12 @@ services:
     restart: always
     ports:
       - ${POSTGRES_DEV_PORT}:5432
+    volumes:
+      - hemnet-tracker-db-dev:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: 'hemnet-tracker-dev'
+
+volumes:
+  hemnet-tracker-db-dev:
