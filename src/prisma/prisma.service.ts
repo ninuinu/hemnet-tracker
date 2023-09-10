@@ -14,6 +14,8 @@ export class PrismaService {
     let successfulWrite = 0;
     let failedWrite = 0;
 
+    const failedListings = [];
+
     for (const listing of listings) {
       const match = this.checkMatchByHemnetListingId(listing);
       //this.checkMatchByListingProperties(listing);
@@ -43,16 +45,27 @@ export class PrismaService {
         console.log(
           `An error occured. Could not add listing ${listing.address} to database.\n`,
         );
-        console.log(listing);
+        failedListings.push(listing);
         failedWrite++;
       }
     }
     console.log(
       `\n\n${successfulWrite} listings added to database.\n${failedWrite} listings failed to add to database.`,
     );
+    console.log(`\n\nFailed listings:`);
+    failedListings.forEach((listing) =>
+      console.log(JSON.stringify(listing, null, 4)),
+    );
   }
 
-  async getAll() {
+  async getAll(page?: number, limit?: number) {
+    if (page && limit) {
+      return await this.prisma.listing.findMany({
+        skip: page,
+        take: limit,
+      });
+    }
+
     return await this.prisma.listing.findMany();
   }
 
@@ -107,6 +120,7 @@ export class PrismaService {
   async checkMatchByListingProperties(listing: Listing) {
     const match = await this.exists(listing);
     if (match.length > 0) {
+      console.log('there was a match');
     }
   }
 }

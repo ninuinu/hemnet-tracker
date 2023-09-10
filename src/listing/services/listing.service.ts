@@ -67,11 +67,13 @@ export class ListingService {
     return params;
   }
 
-  getAll() {
-    return this.prismaService.getAll();
+  getAll(page?: number, limit?: number) {
+    console.log(page);
+    return this.prismaService.getAll(page, limit);
   }
 
   getOne(id: number) {
+    console.log('Get request incoming! Asking for id:', id);
     return this.prismaService.getOne(id);
   }
 
