@@ -61,7 +61,7 @@ export class PrismaService {
   async getAll(page?: number, limit?: number) {
     if (page && limit) {
       return await this.prisma.listing.findMany({
-        skip: page,
+        skip: (page - 1) * limit,
         take: limit,
       });
     }
