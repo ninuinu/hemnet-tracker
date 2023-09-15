@@ -30,7 +30,7 @@ model listing {
   //imageKey      String
 
   createdAt DateTime @default(now())
-  @@unique([hemnetListingId, price])
+  @@unique([hemnetListingId, price, datePublished])
 }
 
 model match {
