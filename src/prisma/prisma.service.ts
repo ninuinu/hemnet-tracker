@@ -87,7 +87,7 @@ export class PrismaService {
     });
   }
 
-  async getHemnetListingIdMatch(listing: Listing) {
+  async getHemnetListingIdMatchGivenListing(listing: Listing) {
     return await this.prisma.listing.findFirst({
       where: {
         hemnetListingId: listing.hemnetListingId,
@@ -95,8 +95,16 @@ export class PrismaService {
     });
   }
 
+  async getHemnetListingIdMatch(hemnetListingId: string) {
+    return await this.prisma.listing.findMany({
+      where: {
+        hemnetListingId: hemnetListingId,
+      },
+    });
+  }
+
   async checkMatchByHemnetListingId(listing: Listing) {
-    const match = await this.getHemnetListingIdMatch(listing);
+    const match = await this.getHemnetListingIdMatchGivenListing(listing);
     if (match) {
       try {
         if (match.datePublished != listing.datePublished) {

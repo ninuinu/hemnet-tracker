@@ -19,6 +19,11 @@ export class ListingController {
     return this.listingService.getAll(page, limit);
   }
 
+  @Get('matches')
+  getMatches(@Query('id') id: string) {
+    return this.listingService.getMatches(+id);
+  }
+
   @Get(':id')
   getOne(@Param('id') id: string) {
     return this.listingService.getOne(+id);

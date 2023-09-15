@@ -68,8 +68,13 @@ export class ListingService {
   }
 
   getAll(page?: number, limit?: number) {
-    console.log(page);
     return this.prismaService.getAll(page, limit);
+  }
+
+  async getMatches(id: number) {
+    const listing = await this.prismaService.getOne(id);
+    const hemnetListingId = listing.hemnetListingId;
+    return this.prismaService.getHemnetListingIdMatch(hemnetListingId);
   }
 
   getOne(id: number) {
