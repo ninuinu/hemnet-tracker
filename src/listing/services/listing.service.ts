@@ -67,6 +67,14 @@ export class ListingService {
     return params;
   }
 
+  async populateUniqueListings() {
+    return this.prismaService.populateUniqueListings();
+  }
+
+  getAllUnique(page?: number, limit?: number) {
+    return this.prismaService.getAllUnique(page, limit);
+  }
+
   getAll(page?: number, limit?: number) {
     return this.prismaService.getAll(page, limit);
   }
@@ -330,9 +338,6 @@ export class ListingService {
 
     return listings;
   }
-
-  // AGAVÄGEN 7 -
-  // monthly fee -NaN, sqmPrice - Nan
 
   async scrollToBottom(page: Page): Promise<void> {
     await page.evaluate(async () => {

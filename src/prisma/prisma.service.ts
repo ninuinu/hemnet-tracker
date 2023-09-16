@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { Listing } from 'src/listing/types/Listing.type';
+import { StoredListing } from 'src/listing/types/StoredListing.type';
 
 @Injectable()
 export class PrismaService {
@@ -18,7 +19,6 @@ export class PrismaService {
 
     for (const listing of listings) {
       const match = this.checkMatchByHemnetListingId(listing);
-      //this.checkMatchByListingProperties(listing);
 
       try {
         await this.prisma.listing.create({
@@ -67,6 +67,78 @@ export class PrismaService {
     }
 
     return await this.prisma.listing.findMany();
+  }
+
+  async getAllUnique(page?: number, limit?: number) {
+    if (page && limit) {
+      return await this.prisma.mostRecentListingOccurance.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+    }
+
+    return await this.prisma.mostRecentListingOccurance.findMany();
+  }
+
+  async populateUniqueListings() {
+    const allListings = await this.prisma.listing.findMany();
+    const resultMap = new Map<string, StoredListing>();
+
+    allListings.forEach((item) => {
+      if (
+        !resultMap.has(item.hemnetListingId) ||
+        item.createdAt > resultMap.get(item.hemnetListingId)!.createdAt
+      ) {
+        resultMap.set(item.hemnetListingId, item);
+      }
+    });
+
+    let successfulWrite = 0;
+    let failedWrite = 0;
+
+    const failedListings = [];
+
+    for (const listing of [...resultMap.values()]) {
+      try {
+        await this.prisma.mostRecentListingOccurance.create({
+          data: {
+            id: listing.id,
+            address: listing.address,
+            price: listing.price,
+            sqmPrice: listing.sqmPrice,
+            sqmSize: listing.sqmSize,
+            roomCount: listing.roomCount,
+            imageUrl: listing.imageUrl,
+            url: listing.url,
+            monthlyFee: listing.monthlyFee,
+            hemnetListingId: listing.hemnetListingId,
+            datePublished: listing.datePublished,
+            locationId: listing.locationId,
+            balcony: listing.balcony,
+            floor: listing.floor,
+            patio: listing.patio,
+            elevator: listing.elevator,
+            createdAt: listing.createdAt,
+          },
+        });
+        successfulWrite++;
+      } catch (error) {
+        console.log(
+          `An error occured. Could not add listing ${listing.address} to database.\n`,
+        );
+        failedListings.push(listing);
+        failedWrite++;
+      }
+    }
+    console.log(
+      `\n\n${successfulWrite} listings added to database.\n${failedWrite} listings failed to add to database.`,
+    );
+    console.log(`\n\nFailed listings:`);
+    failedListings.forEach((listing) =>
+      console.log(JSON.stringify(listing, null, 4)),
+    );
+
+    return [...resultMap.values()];
   }
 
   async getOne(id: number) {
@@ -132,5 +204,3 @@ export class PrismaService {
     }
   }
 }
-
-// TODO: add check for "if address, sqm, roomcount the same AND date published the same => don't save to listing table"
