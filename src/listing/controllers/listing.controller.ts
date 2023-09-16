@@ -10,6 +10,15 @@ export class ListingController {
     return this.listingService.scrape(location);
   }
 
+  @Get('unique')
+  getAllUnique(@Query('page') page: number, @Query('limit') limit: number) {
+    // TODO add DTO for transformation
+    page = Number(page);
+    limit = Number(limit);
+
+    return this.listingService.getAllUnique(page, limit);
+  }
+
   @Get()
   getAll(@Query('page') page: number, @Query('limit') limit: number) {
     // TODO add DTO for transformation
@@ -19,8 +28,14 @@ export class ListingController {
     return this.listingService.getAll(page, limit);
   }
 
+  @Get('populate')
+  populateUniqueListings() {
+    return this.listingService.populateUniqueListings();
+  }
+
   @Get('matches')
   getMatches(@Query('id') id: string) {
+    console.log('Getting matches for id:', id);
     return this.listingService.getMatches(+id);
   }
 
