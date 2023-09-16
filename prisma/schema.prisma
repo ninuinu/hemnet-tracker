@@ -38,3 +38,26 @@ model match {
   hemnetListingId String   @unique
   createdAt       DateTime @default(now())
 }
+
+model mostRecentListingOccurance {
+  id              Int    @id @unique
+  url             String
+  address         String
+  price           Int
+  sqmPrice        Int
+  sqmSize         String
+  monthlyFee      Int
+  roomCount       String
+  imageUrl        String
+  hemnetListingId String 
+  datePublished   String
+  locationId      Int
+  balcony         String
+  patio           String
+  floor           String
+  elevator        String
+  createdAt       DateTime 
+  //imageKey      String
+
+  @@unique([hemnetListingId, price, datePublished])
+}
