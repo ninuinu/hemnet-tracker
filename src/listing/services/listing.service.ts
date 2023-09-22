@@ -1,24 +1,24 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
-import { BucketService } from 'src/bucket/services/bucket.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer, { Page } from 'puppeteer';
-import { DateInWords, day, month, year } from '../types';
+import { firstValueFrom } from 'rxjs';
+import { BucketService } from 'src/bucket/services/bucket.service';
+import { DatabaseService } from 'src/database/database.service';
+import { DateInWords, Day, Month, Year } from '../types';
 import { Listing } from '../types/Listing.type';
-import { readlink } from 'fs';
 
 @Injectable()
 export class ListingService {
   BASEURL = 'https://www.hemnet.se/bostader?';
   ITEM_TYPES = 'bostadsratt';
+  NEW_CONSTRUCTION = 'exclude';
   LISTINGS: Listing[] = [];
 
   constructor(
     private httpService: HttpService,
     private bucketService: BucketService,
-    private prismaService: PrismaService,
+    private databaseService: DatabaseService,
   ) {}
 
   async scrape(location: string) {
@@ -48,7 +48,7 @@ export class ListingService {
       const updatedListings = await this.getDatePublished(listings);
       //const updatedListings = await this.bucketService.uploadImages(listings);
 
-      const failed = this.prismaService.saveListings(updatedListings);
+      const failed = this.databaseService.saveListings(updatedListings);
       return failed;
     } catch (error) {
       console.error(`An error occurred. ${error}`);
@@ -59,7 +59,7 @@ export class ListingService {
     const params = new URLSearchParams();
     params.append('location_ids[]', location);
     params.append('item_types[]', this.ITEM_TYPES);
-    params.append('new_construction', 'exclude');
+    params.append('new_construction', this.NEW_CONSTRUCTION);
 
     if (page) {
       params.append('page', page);
@@ -69,26 +69,26 @@ export class ListingService {
   }
 
   async populateUniqueListings() {
-    return this.prismaService.populateUniqueListings();
+    return this.databaseService.populateUniqueListings();
   }
 
   getAllUnique(page?: number, limit?: number) {
-    return this.prismaService.getAllUnique(page, limit);
+    return this.databaseService.getAllUnique(page, limit);
   }
 
   getAll(page?: number, limit?: number) {
-    return this.prismaService.getAll(page, limit);
+    return this.databaseService.getAll(page, limit);
   }
 
   async getMatches(id: number) {
-    const listing = await this.prismaService.getOne(id);
+    const listing = await this.databaseService.getOne(id);
     const hemnetListingId = listing.hemnetListingId;
-    return this.prismaService.getHemnetListingIdMatch(hemnetListingId);
+    return this.databaseService.getHemnetListingIdMatch(hemnetListingId);
   }
 
   getOne(id: number) {
     console.log('Get request incoming! Asking for id:', id);
-    return this.prismaService.getOne(id);
+    return this.databaseService.getOne(id);
   }
 
   private async getDatePublished(listings: Listing[]) {
@@ -209,9 +209,9 @@ export class ListingService {
         const dateComponents = date.split(' ');
 
         const dateInWords: DateInWords = {
-          day: dateComponents[0] as day,
-          month: dateComponents[1] as month,
-          year: dateComponents[2] as year,
+          day: dateComponents[0] as Day,
+          month: dateComponents[1] as Month,
+          year: dateComponents[2] as Year,
         };
 
         const dateInDigits = this.convertDate(dateInWords);

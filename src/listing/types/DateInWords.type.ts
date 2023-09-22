@@ -1,4 +1,4 @@
-export type day =
+export type Day =
   | '1'
   | '2'
   | '3'
@@ -31,7 +31,7 @@ export type day =
   | '30'
   | '31';
 
-export type month =
+export type Month =
   | 'januari'
   | 'februari'
   | 'mars'
@@ -45,10 +45,10 @@ export type month =
   | 'november'
   | 'december';
 
-export type year = '2022' | '2023';
+export type Year = '2022' | '2023';
 
 export type DateInWords = {
-  day: day;
-  month: month;
-  year: year;
+  day: Day;
+  month: Month;
+  year: Year;
 };
