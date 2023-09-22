@@ -42,9 +42,16 @@ export class PrismaService {
         });
         successfulWrite++;
       } catch (error) {
-        console.log(
-          `An error occured. Could not add listing ${listing.address} to database.\n`,
-        );
+        if (error.code === 'P2002') {
+          console.log(
+            `Listing ${listing.address} already exists in database. Skipping.`,
+          );
+        } else {
+          console.log(
+            `Failed to save listing ${listing.address} to database. Error: \n${error}`,
+          );
+        }
+
         failedListings.push(listing);
         failedWrite++;
       }
@@ -52,10 +59,14 @@ export class PrismaService {
     console.log(
       `\n\n${successfulWrite} listings added to database.\n${failedWrite} listings failed to add to database.`,
     );
+
+    return failedListings;
+    /*
     console.log(`\n\nFailed listings:`);
     failedListings.forEach((listing) =>
       console.log(JSON.stringify(listing, null, 4)),
     );
+    */
   }
 
   async getAll(page?: number, limit?: number) {
