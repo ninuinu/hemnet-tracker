@@ -48,8 +48,8 @@ export class ListingService {
       const updatedListings = await this.getDatePublished(listings);
       //const updatedListings = await this.bucketService.uploadImages(listings);
 
-      this.prismaService.saveListings(updatedListings);
-      return updatedListings;
+      const failed = this.prismaService.saveListings(updatedListings);
+      return failed;
     } catch (error) {
       console.error(`An error occurred. ${error}`);
     }
@@ -59,6 +59,7 @@ export class ListingService {
     const params = new URLSearchParams();
     params.append('location_ids[]', location);
     params.append('item_types[]', this.ITEM_TYPES);
+    params.append('new_construction', 'exclude');
 
     if (page) {
       params.append('page', page);
@@ -353,7 +354,7 @@ export class ListingService {
             clearInterval(timer);
             resolve();
           }
-        }, 100);
+        }, 40);
       });
     });
   }
