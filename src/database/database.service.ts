@@ -4,11 +4,11 @@ import { Listing } from 'src/listing/types/Listing.type';
 import { StoredListing } from 'src/listing/types/StoredListing.type';
 
 @Injectable()
-export class PrismaService {
-  private readonly prisma: PrismaClient;
+export class DatabaseService {
+  private readonly databaseClient: PrismaClient;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.databaseClient = new PrismaClient();
   }
 
   async saveListings(listings: Listing[]) {
@@ -21,7 +21,7 @@ export class PrismaService {
       const match = this.checkMatchByHemnetListingId(listing);
 
       try {
-        await this.prisma.listing.create({
+        await this.databaseClient.listing.create({
           data: {
             address: listing.address,
             price: listing.price,
@@ -71,28 +71,28 @@ export class PrismaService {
 
   async getAll(page?: number, limit?: number) {
     if (page && limit) {
-      return await this.prisma.listing.findMany({
+      return await this.databaseClient.listing.findMany({
         skip: (page - 1) * limit,
         take: limit,
       });
     }
 
-    return await this.prisma.listing.findMany();
+    return await this.databaseClient.listing.findMany();
   }
 
   async getAllUnique(page?: number, limit?: number) {
     if (page && limit) {
-      return await this.prisma.mostRecentListingOccurance.findMany({
+      return await this.databaseClient.mostRecentListingOccurance.findMany({
         skip: (page - 1) * limit,
         take: limit,
       });
     }
 
-    return await this.prisma.mostRecentListingOccurance.findMany();
+    return await this.databaseClient.mostRecentListingOccurance.findMany();
   }
 
   async populateUniqueListings() {
-    const allListings = await this.prisma.listing.findMany();
+    const allListings = await this.databaseClient.listing.findMany();
     const resultMap = new Map<string, StoredListing>();
 
     allListings.forEach((item) => {
@@ -111,7 +111,7 @@ export class PrismaService {
 
     for (const listing of [...resultMap.values()]) {
       try {
-        await this.prisma.mostRecentListingOccurance.create({
+        await this.databaseClient.mostRecentListingOccurance.create({
           data: {
             id: listing.id,
             address: listing.address,
@@ -153,7 +153,7 @@ export class PrismaService {
   }
 
   async getOne(id: number) {
-    return await this.prisma.listing.findUnique({
+    return await this.databaseClient.listing.findUnique({
       where: {
         id,
       },
@@ -161,7 +161,7 @@ export class PrismaService {
   }
 
   async exists(listing: Listing) {
-    return await this.prisma.listing.findMany({
+    return await this.databaseClient.listing.findMany({
       where: {
         roomCount: listing.roomCount,
         sqmSize: listing.sqmSize,
@@ -171,7 +171,7 @@ export class PrismaService {
   }
 
   async getHemnetListingIdMatchGivenListing(listing: Listing) {
-    return await this.prisma.listing.findFirst({
+    return await this.databaseClient.listing.findFirst({
       where: {
         hemnetListingId: listing.hemnetListingId,
       },
@@ -179,7 +179,7 @@ export class PrismaService {
   }
 
   async getHemnetListingIdMatch(hemnetListingId: string) {
-    return await this.prisma.listing.findMany({
+    return await this.databaseClient.listing.findMany({
       where: {
         hemnetListingId: hemnetListingId,
       },
@@ -191,7 +191,7 @@ export class PrismaService {
     if (match) {
       try {
         if (match.datePublished != listing.datePublished) {
-          await this.prisma.match.create({
+          await this.databaseClient.match.create({
             data: {
               hemnetListingId: listing.hemnetListingId,
             },
